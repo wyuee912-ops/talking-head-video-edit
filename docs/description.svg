@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="184" viewBox="0 0 900 184">
+  <defs>
+    <style type="text/css">
+      @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@500;600&amp;display=swap');
+      .desc { font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 20px; font-weight: 500; fill: #1f2328; }
+    </style>
+  </defs>
+  <rect width="100%" height="100%" fill="#ffffff"/>
+  <text x="28" y="52" class="desc">AI-directed editing pipeline for talking-head videos: transcribe → cut</text>
+  <text x="28" y="84" class="desc">filler → assemble chapters → burn-in stylable subtitles → render. Built for</text>
+  <text x="28" y="116" class="desc">solo creators who want broadcast-grade output without sitting in Premiere</text>
+  <text x="28" y="148" class="desc">all day.</text>
+</svg>

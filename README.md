@@ -1,10 +1,10 @@
 # Talking Head Video Edit
 
-> AI-directed editing pipeline for talking-head videos: transcribe → cut filler → assemble chapters → burn-in stylable subtitles → render. Built for solo creators who want broadcast-grade output without sitting in Premiere all day.
+<p align="left"><img src="docs/description.svg" alt="AI-directed editing pipeline for talking-head videos: transcribe, cut filler, assemble chapters, burn-in stylable subtitles, render. Built for solo creators who want broadcast-grade output without sitting in Premiere all day." /></p>
 
 ![Pipeline screenshot — input talking-head clip](docs/screenshot.png)
 
-*A frame from a raw talking-head input. The pipeline transcribes it, removes filler/false starts, and renders a final cut with subtitle styling you control via prompt.*
+*Live demo at a Singapore conference — Sai processing a procurement inbox on stage. The pipeline transcribes the talk audio and renders a final cut with subtitle styling you control via prompt.*
 
 ---
 
