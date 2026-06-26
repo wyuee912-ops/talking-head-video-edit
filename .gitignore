@@ -1,0 +1,33 @@
+.DS_Store
+**/.DS_Store
+.env
+*.pyc
+__pycache__/
+
+# Session workspace — keep structure, ignore heavy outputs
+edit/sources/*
+!edit/sources/.gitkeep
+edit/transcripts/
+edit/edls/
+edit/output/
+edit/verify/
+edit/clips_*/
+edit/*.mp4
+edit/*.srt
+edit/_render_edl.json
+edit/_chapter_*.json
+edit/manifest.json
+edit/base*.mp4
+edit/*.prenorm.mp4
+edit/director/inventory.json
+edit/director/brief.md
+edit/director/decisions.json
+!edit/director/decisions.example.json
+
+# Fonts — user-provided
+edit/fonts/*
+!edit/fonts/.gitkeep
+!fonts/README.md
+
+# Local chapter config (project-specific)
+config/chapters.json

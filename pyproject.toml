@@ -1,0 +1,12 @@
+[project]
+name = "talking-head-edit"
+version = "0.1.0"
+description = "Pacing-cleanup pipeline for talking-head and stage speech video"
+requires-python = ">=3.10"
+dependencies = [
+    "requests",
+]
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"

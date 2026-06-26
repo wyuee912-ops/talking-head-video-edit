@@ -1,0 +1,16 @@
+{
+  "min_pause_s": 0.25,
+  "subtitle_style": "manrope-speech",
+  "grade": "none",
+  "language": "en",
+  "transcribe_workers": 4,
+  "default_sample_stem": null,
+  "render_preview": true,
+  "caption": {
+    "font_size": 12,
+    "chunk_words": 4,
+    "gap_s": 0.10,
+    "hold_after_s": 0.12,
+    "min_duration_s": 0.35
+  }
+}

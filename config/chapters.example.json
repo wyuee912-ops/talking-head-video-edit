@@ -1,0 +1,42 @@
+{
+  "chapters": [
+    {
+      "slug": "chapter_01_hook_thesis",
+      "title": "Hook + thesis",
+      "description": "Opening, history, why GUI agents",
+      "clips": [
+        "IMG_8240", "IMG_8252", "IMG_8253", "IMG_8267", "IMG_8268",
+        "IMG_8278", "IMG_8287", "IMG_8290"
+      ]
+    },
+    {
+      "slug": "chapter_02_product_demos",
+      "title": "Product & demos",
+      "description": "Use cases, customer story, desktop demo",
+      "clips": [
+        "IMG_8291", "IMG_8292", "IMG_8294", "IMG_8295", "IMG_8310", "IMG_8311"
+      ]
+    },
+    {
+      "slug": "chapter_03_trust_deployment",
+      "title": "Trust & deployment",
+      "description": "Guardrails, AGI, sandbox, safety",
+      "clips": [
+        "IMG_8317", "IMG_8319", "IMG_8327", "IMG_8334", "IMG_8335", "IMG_8336", "IMG_8344"
+      ]
+    },
+    {
+      "slug": "chapter_04_qa",
+      "title": "Q&A",
+      "description": "Audience questions and answers",
+      "clips": [
+        "IMG_8345", "IMG_8346", "IMG_8347", "IMG_8348", "IMG_8349", "IMG_8350"
+      ]
+    }
+  ],
+  "exclude_fragments": [
+    "IMG_8269", "IMG_8288", "IMG_8289", "IMG_8318",
+    "IMG_8330", "IMG_8331", "IMG_8332", "IMG_8333",
+    "IMG_8362", "IMG_8363", "IMG_8364"
+  ]
+}
