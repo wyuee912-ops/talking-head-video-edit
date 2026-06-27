@@ -72,6 +72,10 @@ SUBTITLE_PRESETS: dict[str, dict[str, str | int]] = {
         ),
         "chunk_words": 4,
         "uppercase": False,
+        "gap_s": 0.04,
+        "tail_pad_s": 0.08,
+        "offset_s": 0.0,
+        "min_display_s": 0.10,
     },
     "manrope-speech-dark": {
         "force_style": (
@@ -96,6 +100,10 @@ def resolve_subtitle_config(edl: dict, edit_dir: Path) -> tuple[str, dict]:
         preset["chunk_words"] = int(edl["subtitle_chunk_words"])
     if "subtitle_uppercase" in edl:
         preset["uppercase"] = bool(edl["subtitle_uppercase"])
+    # Optional per-project caption timing overrides (see config/defaults.json)
+    for key in ("gap_s", "tail_pad_s", "offset_s", "min_display_s", "chunk_words"):
+        if key in (edl.get("caption") or {}):
+            preset[key] = edl["caption"][key]
     return str(preset["force_style"]), preset
 
 
@@ -345,46 +353,39 @@ def _words_in_range(transcript: dict, t_start: float, t_end: float) -> list[dict
     return out
 
 
-def _sequence_subtitle_cues(
+def _align_subtitle_cues(
     entries: list[tuple[float, float, str]],
     *,
-    gap_s: float = 0.10,
-    hold_after_s: float = 0.12,
-    min_duration_s: float = 0.35,
+    gap_s: float = 0.04,
+    tail_pad_s: float = 0.08,
+    offset_s: float = 0.0,
+    min_display_s: float = 0.10,
 ) -> list[tuple[float, float, str]]:
-    """Ensure one caption at a time — no overlapping display windows.
+    """Align cues to word timestamps; resolve overlaps by trimming ends only.
 
-    Keeps each cue's start aligned to speech. Trims the end of each cue so the
-    next cue cannot appear until the previous has cleared (+ gap_s).
+    Start times stay anchored to the first spoken word in each chunk.
+    Never extend a cue with artificial min-duration into the next phrase.
     """
     if not entries:
         return []
 
-    sorted_entries = sorted(entries, key=lambda e: e[0])
-    sequenced: list[tuple[float, float, str]] = []
-
-    for i, (start, end, text) in enumerate(sorted_entries):
-        end = end + hold_after_s
-
-        if i + 1 < len(sorted_entries):
-            next_start = sorted_entries[i + 1][0]
-            end = min(end, next_start - gap_s)
-
-        end = max(end, start + min_duration_s)
-
-        if sequenced:
-            prev_start, prev_end, prev_text = sequenced[-1]
-            if start < prev_end + gap_s:
-                prev_end = min(prev_end, start - gap_s)
-                prev_end = max(prev_end, prev_start + min_duration_s)
-                sequenced[-1] = (prev_start, prev_end, prev_text)
-
+    aligned: list[tuple[float, float, str]] = []
+    for word_start, word_end, text in sorted(entries, key=lambda e: e[0]):
+        start = max(0.0, word_start + offset_s)
+        end = word_end + offset_s + tail_pad_s
         if end <= start:
-            end = start + min_duration_s
+            end = start + min_display_s
+        aligned.append((start, end, text))
 
-        sequenced.append((start, end, text))
+    for i in range(len(aligned) - 1):
+        start, end, text = aligned[i]
+        next_start = aligned[i + 1][0]
+        max_end = next_start - gap_s
+        if end > max_end:
+            end = max_end if max_end > start else start + min_display_s
+            aligned[i] = (start, end, text)
 
-    return sequenced
+    return aligned
 
 
 def build_master_srt(
@@ -394,11 +395,15 @@ def build_master_srt(
     *,
     chunk_words: int = 2,
     uppercase: bool = True,
+    gap_s: float = 0.04,
+    tail_pad_s: float = 0.08,
+    offset_s: float = 0.0,
+    min_display_s: float = 0.10,
 ) -> None:
     """Build an output-timeline SRT from per-source transcripts.
 
-    Chunk size and case come from the subtitle preset (default: 2-word UPPERCASE).
-    Output times computed as word.start - segment_start + segment_offset.
+    Cue start = first word timestamp; cue end = last word + tail_pad.
+    Output times: word.start - segment_start + segment_offset (Rule 5).
     """
     transcripts_dir = edit_dir / "transcripts"
     sources = edl["sources"]
@@ -437,12 +442,11 @@ def build_master_srt(
             chunks.append(current)
 
         for chunk in chunks:
-            local_start = max(seg_start, chunk[0].get("start", seg_start))
-            local_end = min(seg_end, chunk[-1].get("end", seg_end))
-            out_start = max(0.0, local_start - seg_start) + seg_offset
-            out_end = max(0.0, local_end - seg_start) + seg_offset
-            if out_end <= out_start:
-                out_end = out_start + 0.4
+            word_start = float(chunk[0]["start"])
+            word_end = float(chunk[-1]["end"])
+            # Map source time → output timeline
+            out_start = max(0.0, word_start - seg_start) + seg_offset
+            out_end = max(0.0, word_end - seg_start) + seg_offset
             text = " ".join((w.get("text") or "").strip() for w in chunk)
             text = re.sub(r"\s+", " ", text).strip()
             text = text.rstrip(",;:")
@@ -452,7 +456,13 @@ def build_master_srt(
 
         seg_offset += seg_duration
 
-    entries = _sequence_subtitle_cues(entries)
+    entries = _align_subtitle_cues(
+        entries,
+        gap_s=gap_s,
+        tail_pad_s=tail_pad_s,
+        offset_s=offset_s,
+        min_display_s=min_display_s,
+    )
 
     lines: list[str] = []
     for i, (a, b, t) in enumerate(entries, start=1):
@@ -726,6 +736,10 @@ def main() -> None:
                 subs_path,
                 chunk_words=int(sub_cfg.get("chunk_words", 2)),
                 uppercase=bool(sub_cfg.get("uppercase", True)),
+                gap_s=float(sub_cfg.get("gap_s", 0.04)),
+                tail_pad_s=float(sub_cfg.get("tail_pad_s", 0.08)),
+                offset_s=float(sub_cfg.get("offset_s", 0.0)),
+                min_display_s=float(sub_cfg.get("min_display_s", 0.10)),
             )
         elif edl.get("subtitles"):
             subs_path = resolve_path(edl["subtitles"], edit_dir)

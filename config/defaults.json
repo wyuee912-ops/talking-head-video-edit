@@ -9,8 +9,9 @@
   "caption": {
     "font_size": 12,
     "chunk_words": 4,
-    "gap_s": 0.10,
-    "hold_after_s": 0.12,
-    "min_duration_s": 0.35
+    "gap_s": 0.04,
+    "tail_pad_s": 0.08,
+    "offset_s": 0.0,
+    "min_display_s": 0.10
   }
 }
