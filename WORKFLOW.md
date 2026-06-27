@@ -113,7 +113,20 @@ Add sources → pipeline plan (director brief)
 
 ---
 
-## 9. Known limits
+## 9. Subtitle sync (word-timestamp anchoring)
+
+**Problem:** Captions appeared early/late vs speech. Old `_sequence_subtitle_cues` forced 350ms min duration + 100ms gaps, shifting starts and creating overlaps.
+
+**Fix:** Cues anchor to transcript word times:
+- **Start** = first word in chunk (never shifted)
+- **End** = last word + `tail_pad_s` (default 80ms)
+- Overlaps trimmed by shortening previous cue's end only
+
+**Tune in `config/defaults.json` → `caption.offset_s`** if ASR is consistently early/late (try `-0.05` or `+0.05`).
+
+---
+
+## 10. Known limits
 
 - Groq free tier: 20 RPM — batch transcribe may need retry
 - Variable fonts may not work with libass — use static `.ttf` (e.g. Manrope-SemiBold)
