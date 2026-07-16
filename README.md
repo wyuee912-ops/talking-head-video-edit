@@ -8,13 +8,35 @@
 
 ---
 
+## What's new — social ASS captions + title card
+
+Vertical 9:16 social cuts now have an approved look separate from the stage `manrope-speech` style: native **ASS** captions (Manrope SemiBold, soft shadow, ~3-word cues), burn **before** 1.2× speed, plus an optional **2.8s** black title card.
+
+| Title card | Caption burn-in |
+|---|---|
+| ![Social title card — black full-bleed, white Manrope](docs/screenshot-social-title.jpg) | ![Social ASS caption — Manrope SemiBold with soft shadow](docs/screenshot-social-caption.jpg) |
+
+*Left: 2.8s title card (`SafeGround: know when / to trust the click`). Right: ASS cue at PlayRes size 160/180 — white Manrope, outline 0, soft shadow, bottom-center.*
+
+Defaults live in `config/defaults.json` (`caption_ass_social`, `title_card`). Full spec: [WORKFLOW.md §11](WORKFLOW.md#11-social-ass-style--title-card-approved-2026-07).
+
+| | Stage (`manrope-speech`) | Social ASS |
+|--|--|--|
+| Engine | SRT + `force_style` | Native `.ass` PlayRes |
+| Font | Manrope 12 | Manrope SemiBold **160** / **180** (4K) |
+| Look | outline 1, no shadow | outline 0, shadow 6–7 |
+| Chunking | ~4 words | ~3 words, ≤24 chars |
+| Speed | 1.0× | burn @1× → content **1.2×** → title @1.0× |
+
+---
+
 ## What it does
 
 1. **Transcribes** raw `.mov`/`.mp4` clips using WhisperX (word-level timestamps)
 2. **Plans cuts** via an LLM "director" that reads the transcript and decides which segments to keep, trim, or kill
 3. **Assembles chapters** with paced edits (J/L cuts, silence trimming, micro-fades)
-4. **Burns in subtitles** with full styling control (color, outline, shadow, emoji-safe fonts)
-5. **Renders** the final `.mp4` via ffmpeg
+4. **Burns in subtitles** with full styling control — stage SRT *or* social ASS (color, outline, shadow, Manrope)
+5. **Renders** the final `.mp4` via ffmpeg (optional title card + content speed)
 
 The whole thing runs as a CLI pipeline — drop clips in `edit/sources/`, run `scripts/pipeline.py`, get a finished video.
 
@@ -47,6 +69,8 @@ The director outputs an EDL the pipeline consumes. You can edit the EDL by hand 
 ---
 
 ## Subtitle styling — the fun part
+
+### Stage style (SRT)
 
 Subtitles are burned in via ffmpeg's `drawtext`/`subtitles` filters, configured per-segment in the EDL. You can override globally via flags or per-segment in the JSON.
 
@@ -99,6 +123,18 @@ python scripts/pipeline.py --clip raw_take_1.mov \
 ```
 
 Use this to make the **hook** in your first segment pop with a bright color + heavy outline, then drop back to clean white for the body.
+
+### Social style (ASS)
+
+For vertical reels, burn a PlayRes-matched `.ass` file (not SRT `force_style`) so font size is real pixels:
+
+```bash
+ffmpeg -i base.mp4 -vf "ass=captions.ass:fontsdir=fonts" -c:a copy captioned.mp4
+# then speed content only:
+ffmpeg -i captioned.mp4 -filter:v "setpts=PTS/1.2" -filter:a "atempo=1.2" sped.mp4
+```
+
+Key ASS style fields (preview 1920×3414): `Fontname=Manrope SemiBold`, `Fontsize=160`, `Outline=0`, `Shadow=6`, `BackColour=&H80000000`, `MarginV=780`, `WrapStyle=2`. See `config/defaults.json` → `caption_ass_social`.
 
 ---
 
