@@ -132,3 +132,53 @@ Add sources → pipeline plan (director brief)
 - Variable fonts may not work with libass — use static `.ttf` (e.g. Manrope-SemiBold)
 - Preview renders are 1080p CRF 22 — set `render_preview: false` for final export
 - No automatic chapter detection — you define groups in JSON
+
+---
+
+## 11. Social ASS style + title card (approved 2026-07)
+
+For vertical 9:16 social cuts (talks / Q&A reels), the approved look is **ASS burned at 1×**, then **1.2× speed on content only**, with an optional **2.8s title card** prepended at 1.0×.
+
+### Caption style (ASS — not SRT `force_style`)
+
+Burn with `ass=captions.ass:fontsdir=fonts` so font size is real pixels against PlayRes.
+
+| Field | Preview 9:16 | 4K 9:16 |
+|-------|--------------|---------|
+| PlayRes | **1920×3414** | **2160×3840** |
+| Font | Manrope SemiBold | same |
+| FontSize | **160** | **180** (~×1.125) |
+| Color | white `&H00FFFFFF` | same |
+| Outline | **0** | same |
+| Shadow | **6** (preview) / **7** (4K) | |
+| BackColour | `&H80000000` (50% black) | same |
+| Alignment | 2 (bottom-center) | same |
+| MarginV | **780** | **878** |
+| MarginL/R | **100** | **112** |
+| WrapStyle | **2** (single line only) | same |
+
+**Chunking:** ~3 words / cue, ≤~24 chars, ≥100ms gap, never overlap. One cue on screen at a time.
+
+**Order (load-bearing):** burn ASS @ 1.0× → `setpts`/`atempo` 1.2× → prepend title → loudnorm. Do **not** speed before burning captions (timing drifts).
+
+### Title card
+
+- Full-bleed solid black, white Manrope SemiBold, centered both axes
+- Size ≈ **2.1% of frame height** (72 on 3414; ~81 on 3840)
+- No outline, shadow, box, logo, or chrome
+- Hook: 1–2 lines max (question or punchy statement)
+- Hold **~2.8s**, hard cut into content
+- Title stays at **1.0×**; only the talk content is sped
+
+Example (Qingyi / SafeGround): `SafeGround: know when` / `to trust the click`
+
+### Stage vs social
+
+| | Stage / batch (`manrope-speech`) | Social ASS (this section) |
+|--|----------------------------------|---------------------------|
+| Engine | SRT + libass `force_style` | Native `.ass` PlayRes |
+| Font size | 12 (scaled) | 160 / 180 absolute |
+| Outline / shadow | Outline 1, shadow 0 | Outline 0, soft shadow 6–7 |
+| Chunking | ~4 words | ~3 words ≤24 chars |
+| Speed | 1.0× | Content 1.2× after burn |
+| Title card | optional | recommended 2.8s hook |

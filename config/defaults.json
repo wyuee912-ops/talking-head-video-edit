@@ -13,5 +13,37 @@
     "tail_pad_s": 0.08,
     "offset_s": 0.0,
     "min_display_s": 0.10
+  },
+  "caption_ass_social": {
+    "comment": "Approved 2026-07 vertical social style — burn ASS @1x then speed content 1.2x",
+    "play_res_preview": [1920, 3414],
+    "play_res_4k": [2160, 3840],
+    "font": "Manrope SemiBold",
+    "font_size_preview": 160,
+    "font_size_4k": 180,
+    "primary_colour": "&H00FFFFFF",
+    "outline": 0,
+    "shadow_preview": 6,
+    "shadow_4k": 7,
+    "back_colour": "&H80000000",
+    "alignment": 2,
+    "margin_v_preview": 780,
+    "margin_v_4k": 878,
+    "margin_lr_preview": 100,
+    "margin_lr_4k": 112,
+    "wrap_style": 2,
+    "chunk_words": 3,
+    "max_chars": 24,
+    "gap_s": 0.1,
+    "content_speed": 1.2
+  },
+  "title_card": {
+    "duration_s": 2.8,
+    "font": "Manrope SemiBold",
+    "font_size_frac_of_height": 0.021,
+    "color": [255, 255, 255],
+    "background": [0, 0, 0],
+    "max_lines": 2,
+    "speed": 1.0
   }
 }
