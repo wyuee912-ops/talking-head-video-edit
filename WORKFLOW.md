@@ -182,3 +182,73 @@ Example (Qingyi / SafeGround): `SafeGround: know when` / `to trust the click`
 | Chunking | ~4 words | ~3 words ≤24 chars |
 | Speed | 1.0× | Content 1.2× after burn |
 | Title card | optional | recommended 2.8s hook |
+
+---
+
+## 12. Transcript → edit loop
+
+For social cuts, the fastest iteration is **edit the transcript, not the timeline**.
+
+### Artifacts
+
+| File | Role |
+|------|------|
+| `transcripts/<stem>.json` | Word-level ASR (source of truth for times) |
+| `full_transcript.md` | Readable source transcript with `[src_start–src_end]` chunks |
+| `full_transcript_edited.md` | User (or agent) marks **DELETE** ranges + **FIX** words |
+| `kept_transcript.md` | What remains after deletes, mapped to output times |
+| `captions_cues.md` | Final ASS cue text for review |
+| `edl.json` | Keep windows snapped to word boundaries |
+
+### Rules
+
+1. **DELETE / omit a chunk** → drop that source range from the EDL (still chronological among keeps).
+2. **FIX a word** → change caption text only; do **not** retime or re-voice. Audio stays as spoken.
+3. Snap every cut to word start/end — never mid-word.
+4. After rebuild: regenerate ASS from kept words + fix map → burn @1× → speed content → prepend title → loudnorm.
+5. Re-run §13 QC on the new output before handoff.
+
+### Example (SafeGround / Qingyi)
+
+- DELETE intro bio, demo middle (~433–469s src), all Q&A after thank you  
+- KEEP hook → method → calibration → results → future work / thank you  
+- FIX `GUI-Browing` / `GI-Borne` → `GUI-grounding`, `authenticity` → `uncertainty`, etc.  
+- Result: ~339s @1× → ~4:46 with 1.2× + 2.8s title
+
+---
+
+## 13. Quality check (self-eval)
+
+**Do not present a preview until self-eval passes.** Inspect the **rendered output**, not the source files.
+
+### Frame pulls (`verify/`)
+
+```bash
+# Bookends
+ffmpeg -y -ss 1 -i out.mp4 -frames:v 1 verify/out_1s.jpg
+ffmpeg -y -sseof -2 -i out.mp4 -frames:v 1 verify/out_end.jpg
+
+# Every cut boundary (±1.5s) — derive times from EDL output timeline
+# Midpoints + known caption risk spots (jargon, typefixes)
+ffmpeg -y -ss 65 -i out.mp4 -frames:v 1 verify/qc_caption.jpg
+```
+
+Also: `ffprobe` duration vs expected (EDL sum / speed + title duration).
+
+### Pass / fail
+
+| Check | Fail if… |
+|-------|----------|
+| Orientation | Sideways / mirrored phone rotation |
+| Cut audio | Mid-word chop, click, missing fade |
+| Cut video | Black flash, jump on action |
+| Captions | Overlap, wrong typefix, unreadable, early/late vs speech |
+| Title | Wrong copy, held too long/short, sped with content |
+| Duration | Off by >0.3s from plan |
+| Coherence | Grade/exposure wild between segments |
+
+**Cap at 3** fix → re-render → re-eval loops. If issues remain, list them for the user instead of looping forever.
+
+### Batch gate (still required)
+
+`sample STEM` → snapshot JPG → user approves captions → only then `batch --force`. Never batch-render 30+ clips before one approved sample.

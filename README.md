@@ -8,7 +8,9 @@
 
 ---
 
-## What's new — social ASS captions + title card
+## What's new (2026-07)
+
+### Social ASS captions + title card
 
 Vertical 9:16 social cuts now have an approved look separate from the stage `manrope-speech` style: native **ASS** captions (Manrope SemiBold, soft shadow, ~3-word cues), burn **before** 1.2× speed, plus an optional **2.8s** black title card.
 
@@ -28,15 +30,57 @@ Defaults live in `config/defaults.json` (`caption_ass_social`, `title_card`). Fu
 | Chunking | ~4 words | ~3 words, ≤24 chars |
 | Speed | 1.0× | burn @1× → content **1.2×** → title @1.0× |
 
+### Transcript → edit (edit the words, not the timeline)
+
+Instead of scrubbing a NLE, you edit a **markdown transcript**. Deletions become cut windows; wording fixes become caption typefixes. Rebuild EDL → ASS → preview from that file.
+
+```
+full_transcript.md  →  user DELETE / FIX  →  full_transcript_edited.md
+        ↓                                            ↓
+   word timestamps                          EDL keep windows + caption map
+        ↓                                            ↓
+   pace-clean (optional)  →  burn ASS  →  1.2×  →  title  →  QC frames
+```
+
+| Edit in the transcript | Effect on the cut |
+|--|--|
+| Remove a paragraph / mark `DELETE` | Drop those source ranges from the EDL |
+| Change a wrong ASR word (`GUI-Browing` → `GUI-grounding`) | Caption shows the fix; audio stays as spoken |
+| Keep chronological blocks | Order never reshuffles — pacing cleanup only |
+
+Artifacts to keep per edit: `full_transcript.md`, `full_transcript_edited.md`, `kept_transcript.md`, `captions_cues.md`, `edl.json`. Details: [WORKFLOW.md §12](WORKFLOW.md#12-transcript--edit-loop).
+
+### Quality check before handoff
+
+Never show a preview until **self-eval** passes. Pull frames from the **rendered output** (not the source) into `verify/`:
+
+| Cut boundary | Caption spot-check |
+|---|---|
+| ![QC — cut boundary frame](docs/screenshot-qc-cut.jpg) | ![QC — caption typefix check](docs/screenshot-qc-caption.jpg) |
+
+*Left: inspect cut ±1.5s for mid-word chops / jump cuts. Right: confirm ASS wording and readability (e.g. `GUI-grounding` typefix).*
+
+Checklist (cap 3 fix→re-render loops, then flag leftovers):
+
+1. **Orientation** — upright (phone rotation applied)
+2. **Cuts** — no mid-word audio; no black flash; fades OK
+3. **Captions** — one cue at a time; readable; typefixes applied; no overlap
+4. **Title** — correct copy, ~2.8s, hard cut into content
+5. **Duration** — `ffprobe` matches EDL (+ title) after 1.2×
+6. **Bookends** — first 2s / last 2s / 2–3 midpoints look coherent
+
+Full checklist: [WORKFLOW.md §13](WORKFLOW.md#13-quality-check-self-eval).
+
 ---
 
 ## What it does
 
-1. **Transcribes** raw `.mov`/`.mp4` clips using WhisperX (word-level timestamps)
-2. **Plans cuts** via an LLM "director" that reads the transcript and decides which segments to keep, trim, or kill
-3. **Assembles chapters** with paced edits (J/L cuts, silence trimming, micro-fades)
-4. **Burns in subtitles** with full styling control — stage SRT *or* social ASS (color, outline, shadow, Manrope)
-5. **Renders** the final `.mp4` via ffmpeg (optional title card + content speed)
+1. **Transcribes** raw `.mov`/`.mp4` clips with word-level timestamps
+2. **Plans cuts** via an LLM "director" — or via a **transcript edit** (DELETE / FIX → EDL)
+3. **Assembles** paced edits (pause/filler trim, chronological, micro-fades)
+4. **Burns in subtitles** — stage SRT *or* social ASS (Manrope, soft shadow)
+5. **Self-evals** cut/caption/title frames in `verify/` before handoff
+6. **Renders** the final `.mp4` (optional title card + content speed)
 
 The whole thing runs as a CLI pipeline — drop clips in `edit/sources/`, run `scripts/pipeline.py`, get a finished video.
 
