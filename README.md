@@ -1,74 +1,97 @@
 # Talking Head Video Edit
 
-AI-assisted editing for **talking-head** and **stage speech** clips — plus a CapCut-style **demo + corner PiP** compositor.
+CLI toolkit for two kinds of talking-head videos:
 
-<p align="left"><img src="docs/description.svg" alt="AI-directed editing pipeline for talking-head videos: transcribe, cut filler, assemble chapters, burn-in stylable subtitles, render." /></p>
-
-![Pipeline screenshot — input talking-head clip](docs/screenshot.png)
-
-*Conference talking-head cut with burned-in captions.*
-
----
-
-## What you can do
-
-| Goal | Tool | Needs API? |
-|------|------|------------|
-| **A.** Pace-clean a speech / talking-head (cut fillers, captions, chapters) | `scripts/pipeline.py` | Yes — `GROQ_API_KEY` (free) |
-| **B.** Overlay a talking head on a screen demo (rounded PiP) | `helpers/compose_pip.py` | No — ffmpeg + Pillow only |
-
-Most people start with **B** if they already have a demo + head clip. Use **A** when you need transcription, pacing cuts, and subtitles.
+| Type | What it looks like | Typical use |
+|------|--------------------|-------------|
+| **Social reels** | Vertical talking head + captions (+ title card) | IG / TikTok / conference clips |
+| **Demo videos** | Screen recording + rounded talking-head PiP | Product walkthroughs, tutorials |
 
 ---
 
-## Install
+## Type 1 — Social reels
+
+Pace-clean a stage or webcam take, burn captions, optional title card for 9:16.
+
+![Talking-head reel input](docs/screenshot.png)
+
+*Conference talking-head cut — transcribed, trimmed, captions burned in.*
+
+| Title card | Caption burn-in |
+|---|---|
+| ![Social title card](docs/screenshot-social-title.jpg) | ![Social ASS caption](docs/screenshot-social-caption.jpg) |
+
+*Left: 2.8s black title card. Right: Manrope SemiBold ASS captions (soft shadow).*
+
+### How to make one
 
 ```bash
-git clone https://github.com/wyuee912-ops/talking-head-video-edit.git
-cd talking-head-video-edit
+# 1. Install
+brew install ffmpeg
+pip install -r requirements.txt
+cp .env.example .env   # add free GROQ_API_KEY from https://console.groq.com
 
-# System
-brew install ffmpeg          # macOS; or apt install ffmpeg
+# 2. Drop clips
+mkdir -p edit/sources
+cp /path/to/your_clips/*.mov edit/sources/
 
-# Python 3.10+
-pip install pillow requests
+# 3. Plan → approve → sample → batch
+python scripts/pipeline.py plan
+cp edit/director/decisions.example.json edit/director/decisions.json
+# edit decisions.json (delivery, sample stem, approvals)
+python scripts/director.py apply && python scripts/director.py validate
+python scripts/pipeline.py sample YOUR_STEM
+python scripts/pipeline.py batch
+# optional chapters:
+python scripts/pipeline.py stitch
 ```
 
-For the pacing pipeline only:
+Flow: `plan → discuss → decisions.json → sample → approve captions → batch → [stitch]`
 
-```bash
-cp .env.example .env
-# edit .env — paste a free key from https://console.groq.com
-```
+More: [DIRECTOR.md](./DIRECTOR.md) · social ASS / title card / QC in [WORKFLOW.md](./WORKFLOW.md)
 
 ---
 
-## Path B — Demo + talking-head PiP (fastest)
+## Type 2 — Demo videos (screen + talking-head PiP)
 
-Put a **screen recording / product demo** under a **rounded talking-head** in the bottom-right corner (CapCut-style face crop + rounded mask).
+A **product demo / screen recording** fills the frame. Your **talking head** sits in a rounded rectangle in the bottom-right (CapCut-style face crop). Audio defaults to the talking-head VO.
 
-### 1. You need two files
+### What the output looks like
 
-| Input | What it is |
-|-------|------------|
-| `--demo` | Screen recording or paced product demo |
-| `--head` | Talking-head / webcam take (same story, VO comes from here by default) |
+| Mid-demo PiP | Another beat |
+|---|---|
+| ![Demo PiP — product UI](docs/screenshot-demo-pip-5s.jpg) | ![Demo PiP — Gmail walkthrough](docs/screenshot-demo-pip-30s.jpg) |
 
-### 2. Check the layout with one still (do this first)
+*Rounded talking-head overlay stays bottom-right while the screen demo leads.*
+
+| Later in the demo | After the demo ends |
+|---|---|
+| ![Demo PiP — agent connect](docs/screenshot-demo-pip-18s.jpg) | ![Full-frame head tail](docs/screenshot-demo-pip-55s.jpg) |
+
+*While the demo runs: rounded PiP. After the demo ends: full-frame talking head (optional tail).*
+
+### How to make one
+
+You need **two inputs**:
+
+| Input | Role |
+|-------|------|
+| `--demo` | Screen recording / paced product demo |
+| `--head` | Webcam / talking-head take (VO source) |
 
 ```bash
+# 1. Install (no API key)
+brew install ffmpeg
+pip install -r requirements.txt
+
+# 2. Check layout with one still BEFORE a long render
 python helpers/compose_pip.py still --preset capcut_0716 \
   --demo /path/to/demo.mov \
   --head /path/to/head.mov \
   --t 5 \
   -o edit/verify/pip_5s.png
-```
 
-Open `edit/verify/pip_5s.png`. If the face crop / corner / roundness looks wrong, stop and tweak (see flags below) before a long render.
-
-### 3. Render the full video
-
-```bash
+# 3. Render
 python helpers/compose_pip.py render --preset capcut_0716 \
   --demo /path/to/demo.mov \
   --head /path/to/head.mov \
@@ -76,111 +99,39 @@ python helpers/compose_pip.py render --preset capcut_0716 \
   -o edit/output/pip.mp4
 ```
 
+Useful flags:
+
 | Flag | Default | Meaning |
 |------|---------|---------|
-| `--preset` | `capcut_0716` | Layout reverse-engineered from a CapCut draft (scale ≈ 0.32, bottom-right, rounded) |
-| `--audio` | `head` | `head` = VO only · `demo` = demo audio · `both` = mix · `none` |
-| `--duration` | min(demo, head) | Cap output length in seconds |
-| `--head-offset` / `--demo-offset` | `0` | Start each input later (seconds) |
+| `--preset` | `capcut_0716` | Face-crop → scale ≈ 0.32 → rounded mask → bottom-right |
+| `--audio` | `head` | `head` · `demo` · `both` · `none` |
+| `--duration` | auto | Cap length (seconds) |
+| `--head-offset` / `--demo-offset` | `0` | Start each clip later |
 | `--canvas` | demo size | e.g. `3840x2160` |
-| `--crf` | `18` | Quality (lower = larger / better) |
-
-### 4. Inspect geometry (optional)
 
 ```bash
+# Inspect resolved pixels
 python helpers/compose_pip.py geometry --preset capcut_0716 --canvas 3840x2160
 ```
 
-Preset numbers also live in `config/defaults.json` → `pip`.
-
-**Tip:** If your talking-head take was reordered in CapCut, export that cut as a new `--head` file (or rebuild a timeline first), then run `compose_pip` on top of the demo.
+Preset numbers: `config/defaults.json` → `pip`.
 
 ---
 
-## Path A — Pace-clean a talking head
-
-Transcribe → plan cuts → sample captions → batch render → optional chapter stitch.
-
-### Flow
-
-```
-plan → discuss → decisions.json → sample → approve captions → batch → [stitch]
-```
-
-### Steps
+## Install (both types)
 
 ```bash
-# 1. Drop raw clips
-mkdir -p edit/sources
-cp /path/to/your_clips/*.mov edit/sources/
-
-# 2. Transcribe + build a director brief
-python scripts/pipeline.py plan
-# → read edit/director/brief.md
-
-# 3. Record what you approved (copy the example, then edit)
-cp edit/director/decisions.example.json edit/director/decisions.json
-# set delivery, exclude_stems, sample.stem, approvals…
-python scripts/director.py apply
-python scripts/director.py validate
-
-# 4. Sample one clip for caption look
-python scripts/pipeline.py sample YOUR_STEM
-# approve → set sample.caption_approved + batch.approved in decisions.json
-
-# 5. Render the batch
-python scripts/pipeline.py batch
-
-# 6. Optional chapter stitch (if delivery = chapters)
-python scripts/pipeline.py stitch
+git clone https://github.com/wyuee912-ops/talking-head-video-edit.git
+cd talking-head-video-edit
+brew install ffmpeg
+pip install -r requirements.txt
 ```
 
-Useful status check:
-
-```bash
-python scripts/pipeline.py status
-```
-
-Full director playbook: [DIRECTOR.md](./DIRECTOR.md) · session notes: [WORKFLOW.md](./WORKFLOW.md)
-
-### Example director intent
-
-| Use case | What to ask for |
-|----------|-----------------|
-| Tight reel | Cut to ~30s, kill ums / false starts, keep the hook |
-| Tutorial | Keep instruction, trim dead air >0.8s only |
-| Chapters | Split into 3–4 topic clips (~1–3 min each) |
-| Highlights | Strongest ~90s standalone moment |
-
----
-
-## Captions & social polish
-
-### Stage style (SRT)
-
-Default for longer / conference cuts — Manrope via ffmpeg `force_style`. See `config/defaults.json`.
-
-### Social style (ASS + title card)
-
-For vertical 9:16 reels: burn **native ASS** (Manrope SemiBold, soft shadow) **before** 1.2× speed, optional **2.8s** black title card.
-
-| Title card | Caption burn-in |
-|---|---|
-| ![Social title card](docs/screenshot-social-title.jpg) | ![Social ASS caption](docs/screenshot-social-caption.jpg) |
-
-Defaults: `config/defaults.json` → `caption_ass_social`, `title_card`. Spec: [WORKFLOW.md §11](WORKFLOW.md#11-social-ass-style--title-card-approved-2026-07).
-
-### Edit the words, not the timeline
-
-Prefer editing a markdown transcript (`DELETE` / typefixes) over scrubbing an NLE — deletions become cut windows; wording fixes become caption text only. Details: [WORKFLOW.md §12](WORKFLOW.md#12-transcript--edit-loop).
-
-### QC before you ship
-
-Pull frames from the **rendered** file into `verify/` — cuts, captions, title, bookends. Checklist: [WORKFLOW.md §13](WORKFLOW.md#13-quality-check-self-eval).
-
-| Cut boundary | Caption spot-check |
-|---|---|
-| ![QC cut](docs/screenshot-qc-cut.jpg) | ![QC caption](docs/screenshot-qc-caption.jpg) |
+| | Social reels | Demo videos |
+|--|:--:|:--:|
+| `ffmpeg` | ✅ | ✅ |
+| `pillow` + `requests` | ✅ | ✅ (`pillow` only strictly needed) |
+| `GROQ_API_KEY` | ✅ free | — |
 
 ---
 
@@ -188,50 +139,31 @@ Pull frames from the **rendered** file into `verify/` — cuts, captions, title,
 
 ```
 talking-head-video-edit/
-├── helpers/
-│   ├── compose_pip.py       # Path B — demo + rounded talking-head PiP
-│   ├── transcribe.py        # Groq Whisper (word timestamps)
-│   ├── build_pacing_edl.py  # pause / filler EDL
-│   ├── render.py            # ffmpeg + subtitles
-│   └── grade.py
-├── scripts/
-│   ├── pipeline.py          # Path A — plan / sample / batch / stitch
-│   ├── director.py          # inventory, brief, gates
-│   ├── batch.py
-│   └── stitch_chapters.py
-├── config/
-│   ├── defaults.json        # captions, title card, pip preset
-│   └── chapters.example.json
-├── edit/
-│   ├── sources/             # drop raw clips here
-│   ├── output/              # renders land here
-│   ├── verify/              # stills for layout / QC
-│   └── director/            # brief + decisions
-├── fonts/                   # Manrope for ASS / SRT burn-in
+├── helpers/compose_pip.py   # demo videos — rounded PiP compositor
+├── scripts/pipeline.py      # social reels — plan / sample / batch / stitch
+├── scripts/director.py      # inventory, brief, approval gates
+├── config/defaults.json     # captions, title card, pip preset
+├── edit/sources/            # drop raw clips
+├── edit/output/             # renders
+├── edit/verify/             # stills for layout / QC
+├── fonts/                   # Manrope for captions
+├── docs/                    # README screenshots
 ├── DIRECTOR.md
 ├── WORKFLOW.md
-└── SKILL.md                 # Cursor / agent skill bundle
+└── SKILL.md
 ```
 
 ---
 
-## Requirements
+## QC before you ship
 
-| | PiP only | Full pacing pipeline |
-|--|--|--|
-| `ffmpeg` | ✅ | ✅ |
-| Python 3.10+ | ✅ | ✅ |
-| `pillow` | ✅ | ✅ |
-| `requests` | — | ✅ |
-| `GROQ_API_KEY` | — | ✅ (free tier) |
+Pull frames from the **rendered** file (not the source):
 
----
+| Cut boundary | Caption check |
+|---|---|
+| ![QC cut](docs/screenshot-qc-cut.jpg) | ![QC caption](docs/screenshot-qc-caption.jpg) |
 
-## Why this exists
-
-Editing talking-head content is high-volume, low-creativity work. This repo turns “an hour in CapCut / Premiere” into a small set of CLI steps — with a director gate so you approve the plan before batch render, and a PiP helper so demo + head layouts stay reproducible.
-
-Built with [Cursor](https://cursor.com).
+Checklist: [WORKFLOW.md §13](WORKFLOW.md#13-quality-check-self-eval).
 
 ---
 
