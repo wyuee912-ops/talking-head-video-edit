@@ -13,16 +13,18 @@ CLI toolkit for two kinds of talking-head videos:
 
 Pace-clean a stage or webcam take, burn captions, optional title card for 9:16.
 
-![Talking-head reel input](docs/screenshot.png)
+<p align="center">
+  <img src="docs/preview-social-reel.jpg" width="280" alt="Social reel — conference talking-head cut with captions" />
+</p>
 
 *Conference talking-head cut — transcribed, trimmed, captions burned in.*
 
-| Title card | Caption burn-in |
-|---|---|
-| ![Social title card](docs/screenshot-social-title.jpg) | ![Social ASS caption](docs/screenshot-social-caption.jpg) |
+<p align="center">
+  <img src="docs/screenshot-social-title.jpg" width="200" alt="Social title card" />
+  <img src="docs/screenshot-social-caption.jpg" width="200" alt="Social ASS caption burn-in" />
+</p>
 
 *Left: 2.8s black title card. Right: Manrope SemiBold ASS captions (soft shadow).*
-
 ### How to make one
 
 ```bash
