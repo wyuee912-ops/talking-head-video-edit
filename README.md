@@ -59,17 +59,11 @@ A **product demo / screen recording** fills the frame. Your **talking head** sit
 
 ### What the output looks like
 
-| Mid-demo PiP | Another beat |
-|---|---|
-| ![Demo PiP — product UI](docs/screenshot-demo-pip-5s.jpg) | ![Demo PiP — Gmail walkthrough](docs/screenshot-demo-pip-30s.jpg) |
+| Product UI | Agent flow | Gmail walkthrough |
+|---|---|---|
+| ![Demo PiP — product UI](docs/screenshot-demo-pip-5s.jpg) | ![Demo PiP — agent connect](docs/screenshot-demo-pip-18s.jpg) | ![Demo PiP — Gmail walkthrough](docs/screenshot-demo-pip-30s.jpg) |
 
 *Rounded talking-head overlay stays bottom-right while the screen demo leads.*
-
-| Later in the demo | After the demo ends |
-|---|---|
-| ![Demo PiP — agent connect](docs/screenshot-demo-pip-18s.jpg) | ![Full-frame head tail](docs/screenshot-demo-pip-55s.jpg) |
-
-*While the demo runs: rounded PiP. After the demo ends: full-frame talking head (optional tail).*
 
 ### How to make one
 
