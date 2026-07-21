@@ -148,8 +148,8 @@ python helpers/compose_split.py geometry --preset capcut_0716_vertical
 ## Install (both types)
 
 ```bash
-git clone https://github.com/wyuee912-ops/talking-head-video-edit.git
-cd talking-head-video-edit
+git clone https://github.com/wyuee912-ops/video-editing.git
+cd video-editing
 brew install ffmpeg
 pip install -r requirements.txt
 ```
@@ -165,7 +165,7 @@ pip install -r requirements.txt
 ## Project structure
 
 ```
-talking-head-video-edit/
+video-editing/
 ├── helpers/compose_pip.py   # demo — horizontal PiP (16:9)
 ├── helpers/compose_split.py # demo — vertical split (9:16)
 ├── scripts/pipeline.py      # social reels — plan / sample / batch / stitch
