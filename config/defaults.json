@@ -45,5 +45,25 @@
     "background": [0, 0, 0],
     "max_lines": 2,
     "speed": 1.0
+  },
+  "pip": {
+    "comment": "CapCut 0716 reverse-engineered demo+talking-head layout. Used by helpers/compose_pip.py --preset capcut_0716",
+    "preset": "capcut_0716",
+    "scale": 0.3206586026808049,
+    "transform": {"x": 0.625, "y": -0.5474925397127282},
+    "material_crop": {
+      "ulx": 0.2677320397418478,
+      "uly": 0.19455672554347825,
+      "urx": 0.8084270974864131,
+      "lly": 0.8012992527173913
+    },
+    "mask": {
+      "width": 0.6939104603293413,
+      "height": 0.8303271757207469,
+      "centerX": 0.040438919127515495,
+      "centerY": 0.09337342337673915,
+      "roundCorner": 0.4515625
+    },
+    "audio": "head"
   }
 }

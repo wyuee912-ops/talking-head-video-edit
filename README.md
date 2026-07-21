@@ -180,6 +180,25 @@ ffmpeg -i captioned.mp4 -filter:v "setpts=PTS/1.2" -filter:a "atempo=1.2" sped.m
 
 Key ASS style fields (preview 1920×3414): `Fontname=Manrope SemiBold`, `Fontsize=160`, `Outline=0`, `Shadow=6`, `BackColour=&H80000000`, `MarginV=780`, `WrapStyle=2`. See `config/defaults.json` → `caption_ass_social`.
 
+### Demo + talking-head PiP
+
+For screen demos with a CapCut-style rounded talking-head overlay (face-crop → scale → rounded mask → bottom-right):
+
+```bash
+# Verify layout against a CapCut reference still
+python helpers/compose_pip.py still --preset capcut_0716 \
+  --demo DEMO.mov --head HEAD.mov --t 5 -o edit/verify/pip_5s.png
+
+# Full render (audio from talking head by default)
+python helpers/compose_pip.py render --preset capcut_0716 \
+  --demo DEMO.mov --head HEAD.mov --audio head -o edit/output/pip.mp4
+
+# Dump resolved pixel geometry
+python helpers/compose_pip.py geometry --preset capcut_0716 --canvas 3840x2160
+```
+
+Preset `capcut_0716` is reverse-engineered from a CapCut draft (verified MAE ≈ 2 vs export). Override scale / crop / corners via CLI flags or `config/defaults.json` → `pip`.
+
 ---
 
 ## Quick start
@@ -220,6 +239,7 @@ talking-head-edit/
 │   ├── transcribe_batch.py
 │   ├── build_pacing_edl.py # EDL builder with pacing rules
 │   ├── render.py          # ffmpeg renderer with subtitle styling
+│   ├── compose_pip.py     # demo + rounded talking-head PiP
 │   └── grade.py           # color grade helpers
 ├── edit/
 │   ├── sources/           # drop raw clips here
