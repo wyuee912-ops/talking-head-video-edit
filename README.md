@@ -73,9 +73,7 @@ Pick the layout that matches the platform:
 **Horizontal — X / LinkedIn / YouTube** (16:9 PiP)
 
 <p align="center">
-  <img src="docs/preview-demo-pip-5s.jpg" width="280" alt="Horizontal demo — product UI" />
-  <img src="docs/preview-demo-pip-18s.jpg" width="280" alt="Horizontal demo — agent flow" />
-  <img src="docs/preview-demo-pip-30s.jpg" width="280" alt="Horizontal demo — Gmail walkthrough" />
+  <img src="docs/preview-demo-pip-5s.jpg" width="640" alt="Horizontal demo — rounded talking-head PiP" />
 </p>
 
 *Rounded talking-head overlay stays bottom-right while the screen demo leads.*
@@ -83,12 +81,10 @@ Pick the layout that matches the platform:
 **Vertical — IG / TikTok / YouTube Shorts** (9:16 split)
 
 <p align="center">
-  <img src="docs/preview-demo-split-5s.jpg" width="180" alt="Vertical demo — product UI" />
-  <img src="docs/preview-demo-split-18s.jpg" width="180" alt="Vertical demo — agent flow" />
-  <img src="docs/preview-demo-split-30s.jpg" width="180" alt="Vertical demo — Gmail walkthrough" />
+  <img src="docs/preview-demo-split-5s.jpg" width="280" alt="Vertical demo — demo on top, talking head below" />
 </p>
 
-*Demo on top, talking head on bottom. Thin black pads top/bottom are part of the CapCut-matched layout — not letterboxing from a bad crop.*
+*Demo on top, talking head on bottom. Thin black pads top/bottom are part of the CapCut-matched layout.*
 
 ### How to make a horizontal demo
 
