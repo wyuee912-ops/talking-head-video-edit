@@ -5,7 +5,8 @@ CLI toolkit for two kinds of talking-head videos:
 | Type | What it looks like | Typical use |
 |------|--------------------|-------------|
 | **Social reels** | Vertical talking head + captions (+ title card) | IG / TikTok / conference clips |
-| **Demo videos** | Screen recording + rounded talking-head PiP | Product walkthroughs, tutorials |
+| **Demo videos** | Screen recording + rounded talking-head PiP | Product walkthroughs, tutorials (16:9) |
+| **Demo split** | Demo on top + talking head below | TikTok / IG product demos (9:16) |
 
 ---
 
@@ -118,7 +119,51 @@ Preset numbers: `config/defaults.json` → `pip`.
 
 ---
 
-## Install (both types)
+## Type 3 — Demo split (9:16 TikTok / IG)
+
+Same two inputs as Type 2, but stacked for vertical: **demo on top**, **talking head on bottom**, with black pads (CapCut export `0716(1)` layout — not corner PiP).
+
+### What the output looks like
+
+| Mid-demo split | After demo ends |
+|---|---|
+| ![Vertical split — mid demo](docs/screenshot-demo-split-5s.jpg) | ![Vertical split — head tail](docs/screenshot-demo-split-55s.jpg) |
+
+*While the demo runs: cover-fit demo above head. After the demo ends: top goes black; head stays in the bottom slot.*
+
+### How to make one
+
+```bash
+# Still-frame verify
+python helpers/compose_split.py still --preset capcut_0716_vertical \
+  --demo /path/to/demo.mov \
+  --head /path/to/head.mov \
+  --t 5 \
+  -o edit/verify/split_5s.jpg
+
+# Full render (top blacks out when demo ends; head keeps playing)
+python helpers/compose_split.py render --preset capcut_0716_vertical \
+  --demo /path/to/demo.mov \
+  --head /path/to/head.mov \
+  --audio head \
+  -o edit/output/vertical.mp4
+```
+
+| Flag | Default | Meaning |
+|------|---------|---------|
+| `--preset` | `capcut_0716_vertical` | 2160×3840 padded split (demo taller than head) |
+| `--audio` | `head` | `head` · `demo` · `both` · `none` |
+| `--duration` | max(demo, head) | Cap length (seconds) |
+
+```bash
+python helpers/compose_split.py geometry --preset capcut_0716_vertical
+```
+
+Preset numbers: `config/defaults.json` → `split`.
+
+---
+
+## Install (all types)
 
 ```bash
 git clone https://github.com/wyuee912-ops/talking-head-video-edit.git
@@ -127,7 +172,7 @@ brew install ffmpeg
 pip install -r requirements.txt
 ```
 
-| | Social reels | Demo videos |
+| | Social reels | Demo PiP / split |
 |--|:--:|:--:|
 | `ffmpeg` | ✅ | ✅ |
 | `pillow` + `requests` | ✅ | ✅ (`pillow` only strictly needed) |
@@ -139,10 +184,11 @@ pip install -r requirements.txt
 
 ```
 talking-head-video-edit/
-├── helpers/compose_pip.py   # demo videos — rounded PiP compositor
+├── helpers/compose_pip.py   # demo videos — rounded PiP compositor (16:9)
+├── helpers/compose_split.py # demo videos — vertical demo/head split (9:16)
 ├── scripts/pipeline.py      # social reels — plan / sample / batch / stitch
 ├── scripts/director.py      # inventory, brief, approval gates
-├── config/defaults.json     # captions, title card, pip preset
+├── config/defaults.json     # captions, title card, pip + split presets
 ├── edit/sources/            # drop raw clips
 ├── edit/output/             # renders
 ├── edit/verify/             # stills for layout / QC

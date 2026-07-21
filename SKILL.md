@@ -104,6 +104,19 @@ python helpers/compose_pip.py render --preset capcut_0716 \
 
 Preset `capcut_0716` is reverse-engineered from CapCut draft `0716` (material face-crop → scale 0.32 → rounded mask → bottom-right). Params live in `config/defaults.json` → `pip` and `helpers/compose_pip.py`. Confirm a still against the user's CapCut reference before a long render.
 
+## Vertical demo + talking-head split (9:16)
+
+When the deliverable is **TikTok/IG stacked layout** (demo top, head bottom — not corner PiP):
+
+```bash
+python helpers/compose_split.py still --preset capcut_0716_vertical \
+  --demo DEMO.mov --head HEAD.mov --t 5 -o edit/verify/split_5s.jpg
+python helpers/compose_split.py render --preset capcut_0716_vertical \
+  --demo DEMO.mov --head HEAD.mov --audio head -o edit/preview_vertical.mp4
+```
+
+Preset `capcut_0716_vertical` matches CapCut export `0716(1).mov` (2160×3840: pad 301 / demo 1682 / head 1575 / pad 282). Params in `config/defaults.json` → `split`. After the demo ends, the top slot goes black and the head stays in the bottom slot.
+
 ## Social cut extras
 
 For vertical reels: ASS burn @1× → content 1.2× → 2.8s title card; defaults in `config/defaults.json` (`caption_ass_social`, `title_card`).

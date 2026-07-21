@@ -65,5 +65,15 @@
       "roundCorner": 0.4515625
     },
     "audio": "head"
+  },
+  "split": {
+    "comment": "CapCut 0716(1) reverse-engineered 9:16 demo/head split. Used by helpers/compose_split.py --preset capcut_0716_vertical",
+    "preset": "capcut_0716_vertical",
+    "canvas": {"w": 2160, "h": 3840},
+    "pad_top": 301,
+    "demo_h": 1682,
+    "head_h": 1575,
+    "pad_bottom": 282,
+    "audio": "head"
   }
 }
